@@ -1,49 +1,45 @@
 const mongoose = require('mongoose');
 
-const colorSchema = new mongoose.Schema({
-    key: String,
-    value: String,
+const ColorSchema = new mongoose.Schema({
+  key: String,
+  value: String,
 });
-const Color =  mongoose.model('Color', colorSchema);
 
-const saveColor = async (key, value) => {
-    let color = await Color.findOne({key});
+const Color = mongoose.model('Color', ColorSchema);
 
-    if (color)
-    {
-        color.set({value});
-    }
-    else {
-        color = new Color({key, value});
-    }
+const saveColor = async ({ key, value }) => {
+  let color = await Color.findOne({ key });
 
-    await color.save();
-    
-}
+  if (color) {
+    color.set({ value });
+  } else {
+    color = new Color({ key, value });
+  }
 
-const deleteColor = async (key) => { await Color.deleteOne({key}); };
+  await color.save();
+};
 
-
-// new Color({ key: 'primary', value: '#FF0000' }).save();
+const deleteColor = async ({ key }) => Color.deleteOne({ key });
 
 const getColors = async () => Color.find();
 
+const getColor = async ({ key, strict = false }) => {
+  let color = await Color.findOne({ key });
 
-const getColor = async ({key, strict = false}) => {
+  if (strict && !color) {
+    return undefined;
+  }
 
-    let color = await Color.findOne({key});
-    if(strict) {
-        return color.value;
-    }
+  if (color) {
+    return color.value;
+  }
 
-    if(color) {
-        return color.value ;
-    }
-    if(strict && !color) {
-        return undefined
-    }
-    return process.env.DEFAULT_COLOR || 'blue';
-
+  return process.env.DEFAULT_COLOR || 'blue';
 };
 
-module.exports = { getColors, getColor,saveColor, deleteColor };
+module.exports = {
+  saveColor,
+  getColor,
+  getColors,
+  deleteColor,
+};
